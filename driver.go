@@ -24,9 +24,9 @@ func (d *PostgresDriver) CreateVersionsTable(db *sql.DB) error {
 func (d *PostgresDriver) HasVersionBeenExecuted(db *sql.DB, version string) (bool, error) {
 	var count int
 
-	if err := db.Get(&count, "SELECT COUNT(*) FROM database_versions WHERE version=$1", version); err != nil {
-		return false, err
-	}
+	// if err := db.Get(&count, "SELECT COUNT(*) FROM database_versions WHERE version=$1", version); err != nil {
+	// 	return false, err
+	// }
 
 	return count > 0, nil
 }
@@ -39,6 +39,6 @@ func (d *PostgresDriver) MarkVersionAsExecuted(tx *sql.Tx, version string) error
 
 // UnmarkVersionAsExecuted unmarks a given version as been executed.
 func (d *PostgresDriver) UnmarkVersionAsExecuted(tx *sql.Tx, version string) error {
-	_, err := transaction.Exec("DELETE FROM database_versions WHERE version=$1", version)
+	_, err := tx.Exec("DELETE FROM database_versions WHERE version=$1", version)
 	return err
 }
