@@ -1,6 +1,8 @@
 package trek
 
-import "database/sql"
+import (
+	"database/sql"
+)
 
 // Driver ...
 type Driver interface {
@@ -13,6 +15,11 @@ type Driver interface {
 // PostgresDriver is a PostgreSQL implementation of the Driver interface.
 type PostgresDriver struct{}
 
+// SQLiteDriver is a SQLite implementation of the Driver interface.
+type SQLiteDriver struct {
+	PostgresDriver
+}
+
 // CreateVersionsTable creates the table for storing migrated versions if it
 // doesn't exist.
 func (d *PostgresDriver) CreateVersionsTable(db *sql.DB) error {
@@ -24,9 +31,11 @@ func (d *PostgresDriver) CreateVersionsTable(db *sql.DB) error {
 func (d *PostgresDriver) HasVersionBeenExecuted(db *sql.DB, version string) (bool, error) {
 	var count int
 
-	// if err := db.Get(&count, "SELECT COUNT(*) FROM database_versions WHERE version=$1", version); err != nil {
-	// 	return false, err
-	// }
+	row := db.QueryRow("SELECT COUNT(*) FROM database_versions WHERE version=$1", version)
+	if err := row.Scan(&count); err != nil {
+		return false, err
+	}
+	defer row.Close()
 
 	return count > 0, nil
 }
