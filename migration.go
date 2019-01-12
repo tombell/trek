@@ -10,6 +10,10 @@ import (
 	"time"
 )
 
+const (
+	migrationTimeLayout = "20060102150405"
+)
+
 // Migration represents a single migration to apply to or rollback from a
 // database.
 type Migration struct {
