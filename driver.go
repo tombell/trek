@@ -35,7 +35,6 @@ func (d *PostgresDriver) HasVersionBeenExecuted(db *sql.DB, version string) (boo
 	if err := row.Scan(&count); err != nil {
 		return false, err
 	}
-	defer row.Close()
 
 	return count > 0, nil
 }

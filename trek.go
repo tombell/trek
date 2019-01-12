@@ -33,7 +33,7 @@ func Apply(driverName string, dsn string, migrationsPath string) error {
 
 // Rollback rolls back the migrations in the given path, to the database using
 // the given driver.
-func Rollback(driver string, dsn string, migrationsPath string) error {
+func Rollback(driverName string, dsn string, migrationsPath string) error {
 	driver, err := getDriver(driverName)
 	if err != nil {
 		return err
