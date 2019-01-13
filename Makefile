@@ -1,5 +1,5 @@
 MODFLAGS=-mod=vendor
-TESTFLAGS=-cover
+TESTFLAGS=-cover -v
 
 all: test
 
