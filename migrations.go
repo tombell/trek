@@ -3,6 +3,7 @@ package trek
 import (
 	"database/sql"
 	"io/ioutil"
+	"log"
 	"path"
 	"sort"
 	"strings"
@@ -48,7 +49,7 @@ func LoadMigrationsFromPath(migrationsPath string) (Migrations, error) {
 
 // Apply applies all the migrations that have not already been applied to the
 // given database.
-func (m Migrations) Apply(driver Driver, db *sql.DB) error {
+func (m Migrations) Apply(logger *log.Logger, driver Driver, db *sql.DB) error {
 	sort.Sort(m)
 
 	for _, migration := range m {
@@ -69,7 +70,7 @@ func (m Migrations) Apply(driver Driver, db *sql.DB) error {
 
 // Rollback rolls back all the migrations that have been applied to the given
 // database.
-func (m Migrations) Rollback(driver Driver, db *sql.DB) error {
+func (m Migrations) Rollback(logger *log.Logger, driver Driver, db *sql.DB) error {
 	sort.Reverse(m)
 
 	for _, migration := range m {

@@ -33,7 +33,7 @@ func Apply(logger *log.Logger, driverName, dsn, migrationsPath string) error {
 		return err
 	}
 
-	return migrations.Apply(driver, db)
+	return migrations.Apply(logger, driver, db)
 }
 
 // Rollback rolls back the migrations in the given path, to the database using
@@ -63,7 +63,7 @@ func Rollback(logger *log.Logger, driverName, dsn, migrationsPath string) error 
 		return err
 	}
 
-	return migrations.Rollback(driver, db)
+	return migrations.Rollback(logger, driver, db)
 }
 
 func getDriver(driver string) (Driver, error) {
