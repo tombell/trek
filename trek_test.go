@@ -45,7 +45,7 @@ func createMigration(t *testing.T, migrationName string, sql string) {
 func applyMigrations(t *testing.T) {
 	t.Helper()
 
-	if err := trek.Apply("sqlite3", "db.sqlite", "migrations"); err != nil {
+	if err := trek.Apply(nil, "sqlite3", "db.sqlite", "migrations"); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -53,7 +53,7 @@ func applyMigrations(t *testing.T) {
 func rollbackMigrations(t *testing.T) {
 	t.Helper()
 
-	if err := trek.Rollback("sqlite3", "db.sqlite", "migrations"); err != nil {
+	if err := trek.Rollback(nil, "sqlite3", "db.sqlite", "migrations"); err != nil {
 		t.Fatal(err)
 	}
 }

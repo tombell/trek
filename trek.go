@@ -3,11 +3,12 @@ package trek
 import (
 	"database/sql"
 	"fmt"
+	"log"
 )
 
 // Apply applies the migrations in the given path, to the database using the
 // given driver.
-func Apply(driverName string, dsn string, migrationsPath string) error {
+func Apply(logger *log.Logger, driverName, dsn, migrationsPath string) error {
 	driver, err := getDriver(driverName)
 	if err != nil {
 		return err
@@ -33,7 +34,7 @@ func Apply(driverName string, dsn string, migrationsPath string) error {
 
 // Rollback rolls back the migrations in the given path, to the database using
 // the given driver.
-func Rollback(driverName string, dsn string, migrationsPath string) error {
+func Rollback(logger *log.Logger, driverName, dsn, migrationsPath string) error {
 	driver, err := getDriver(driverName)
 	if err != nil {
 		return err
