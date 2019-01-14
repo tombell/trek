@@ -28,7 +28,7 @@ func Apply(logger *log.Logger, driverName, dsn, migrationsPath string) error {
 		return err
 	}
 
-	migrations, err := LoadMigrationsFromPath(migrationsPath)
+	migrations, err := LoadMigrations(migrationsPath)
 	if err != nil {
 		return err
 	}
@@ -58,7 +58,7 @@ func Rollback(logger *log.Logger, driverName, dsn, migrationsPath string) error 
 		return err
 	}
 
-	migrations, err := LoadMigrationsFromPath(migrationsPath)
+	migrations, err := LoadMigrations(migrationsPath)
 	if err != nil {
 		return err
 	}

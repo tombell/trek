@@ -17,9 +17,9 @@ func (m Migrations) Len() int           { return len(m) }
 func (m Migrations) Less(i, j int) bool { return m[i].Version.Before(m[j].Version) }
 func (m Migrations) Swap(i, j int)      { m[i], m[j] = m[j], m[i] }
 
-// LoadMigrationsFromPath returns all the loaded migrations from the given
-// directory path.
-func LoadMigrationsFromPath(migrationsPath string) (Migrations, error) {
+// LoadMigrations returns all the loaded migrations from the given directory
+// path.
+func LoadMigrations(migrationsPath string) (Migrations, error) {
 	files, err := ioutil.ReadDir(migrationsPath)
 	if err != nil {
 		return nil, err
