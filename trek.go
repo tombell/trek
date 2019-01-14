@@ -20,6 +20,10 @@ func Apply(logger *log.Logger, driverName, dsn, migrationsPath string) error {
 	}
 	defer db.Close()
 
+	if err := db.Ping(); err != nil {
+		return err
+	}
+
 	if err := driver.CreateVersionsTable(db); err != nil {
 		return err
 	}
@@ -45,6 +49,10 @@ func Rollback(logger *log.Logger, driverName, dsn, migrationsPath string) error 
 		return err
 	}
 	defer db.Close()
+
+	if err := db.Ping(); err != nil {
+		return err
+	}
 
 	if err := driver.CreateVersionsTable(db); err != nil {
 		return err
