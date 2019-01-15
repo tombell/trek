@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"path"
 	"strings"
@@ -45,7 +46,9 @@ func createMigration(t *testing.T, migrationName string, sql string) {
 func applyMigrations(t *testing.T) {
 	t.Helper()
 
-	if err := trek.Apply(nil, "sqlite3", "db.sqlite", "migrations"); err != nil {
+	logger := log.New(os.Stderr, "[trek-test] ", log.LstdFlags)
+
+	if err := trek.Apply(logger, "sqlite3", "db.sqlite", "migrations"); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -53,7 +56,9 @@ func applyMigrations(t *testing.T) {
 func rollbackMigrations(t *testing.T) {
 	t.Helper()
 
-	if err := trek.Rollback(nil, "sqlite3", "db.sqlite", "migrations"); err != nil {
+	logger := log.New(os.Stderr, "[trek-test] ", log.LstdFlags)
+
+	if err := trek.Rollback(logger, "sqlite3", "db.sqlite", "migrations"); err != nil {
 		t.Fatal(err)
 	}
 }
