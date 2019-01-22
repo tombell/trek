@@ -156,5 +156,5 @@ UPDATE users SET username='%v';
 	applyMigrations(t)
 	rollbackMigrations(t)
 
-	assertValueOfUsername(t, "0")
+	assertValueOfUsername(t, "4")
 }
