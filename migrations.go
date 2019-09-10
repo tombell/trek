@@ -47,9 +47,9 @@ func LoadMigrations(migrationsPath string) (Migrations, error) {
 	return migrations, nil
 }
 
-// Apply applies all the migrations that have not already been applied to the
+// Migrate applies all the migrations that have not already been applied to the
 // given database.
-func (m Migrations) Apply(logger *log.Logger, driver Driver, db *sql.DB) error {
+func (m Migrations) Migrate(logger *log.Logger, driver Driver, db *sql.DB) error {
 	sort.Sort(m)
 
 	if logger != nil {
@@ -67,7 +67,7 @@ func (m Migrations) Apply(logger *log.Logger, driver Driver, db *sql.DB) error {
 				logger.Printf(" - applying %q...\n", migration.Name)
 			}
 
-			if err := migration.Apply(driver, db); err != nil {
+			if err := migration.Migrate(driver, db); err != nil {
 				return err
 			}
 		}
