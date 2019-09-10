@@ -78,14 +78,18 @@ func (m Migrations) Apply(logger *log.Logger, driver Driver, db *sql.DB) error {
 
 // Rollback rolls back all the migrations that have been applied to the given
 // database.
-func (m Migrations) Rollback(logger *log.Logger, driver Driver, db *sql.DB) error {
+func (m Migrations) Rollback(logger *log.Logger, driver Driver, db *sql.DB, steps int) error {
 	sort.Sort(sort.Reverse(m))
 
 	if logger != nil {
 		logger.Println("rolling back migrations:")
 	}
 
-	for _, migration := range m {
+	if steps <= 0 {
+		steps = len(m)
+	}
+
+	for _, migration := range m[:steps] {
 		hasBeenMigrated, err := migration.HasBeenMigrated(driver, db)
 		if err != nil {
 			return err

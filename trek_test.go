@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"path"
 	"strings"
@@ -23,6 +22,17 @@ func teardown() {
 	os.RemoveAll("./migrations")
 }
 
+func openDatabase(t *testing.T) *sql.DB {
+	t.Helper()
+
+	db, err := sql.Open("sqlite3", "db.sqlite")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return db
+}
+
 func createMigration(t *testing.T, migrationName string, sql string) {
 	t.Helper()
 
@@ -36,6 +46,7 @@ func createMigration(t *testing.T, migrationName string, sql string) {
 
 	migrationTime := currentMigrationTime.Format("20060102150405")
 	migrationName = migrationTime + "_" + migrationName + ".sql"
+
 	filename := path.Join("migrations", migrationName)
 
 	if err := ioutil.WriteFile(filename, []byte(sql), 0700); err != nil {
@@ -46,28 +57,21 @@ func createMigration(t *testing.T, migrationName string, sql string) {
 func applyMigrations(t *testing.T) {
 	t.Helper()
 
-	logger := log.New(os.Stderr, "[trek-test] ", log.LstdFlags)
-
-	if err := trek.Apply(logger, "sqlite3", "db.sqlite", "migrations"); err != nil {
+	if err := trek.Apply(nil, "sqlite3", "db.sqlite", "migrations"); err != nil {
 		t.Fatal(err)
 	}
 }
 
-func rollbackMigrations(t *testing.T) {
+func rollbackMigrations(t *testing.T, steps int) {
 	t.Helper()
 
-	logger := log.New(os.Stderr, "[trek-test] ", log.LstdFlags)
-
-	if err := trek.Rollback(logger, "sqlite3", "db.sqlite", "migrations"); err != nil {
+	if err := trek.Rollback(nil, "sqlite3", "db.sqlite", "migrations", steps); err != nil {
 		t.Fatal(err)
 	}
 }
 
 func assertValueOfUsername(t *testing.T, expected string) {
-	db, err := sql.Open("sqlite3", "db.sqlite")
-	if err != nil {
-		t.Fatal(err)
-	}
+	db := openDatabase(t)
 	defer db.Close()
 
 	var username string
@@ -78,7 +82,7 @@ func assertValueOfUsername(t *testing.T, expected string) {
 	}
 
 	if username != expected {
-		t.Errorf("expected username to be %v, but got %v", expected, username)
+		t.Fatalf("expected username to be %v, but got %v", expected, username)
 	}
 }
 
@@ -93,24 +97,19 @@ func TestMigrationsApplyInOrder(t *testing.T) {
 	}
 
 	applyMigrations(t)
-
 	assertValueOfUsername(t, "tombell:01234")
 }
 
 func TestMigrationsDontApplyTwice(t *testing.T) {
 	defer teardown()
 
-	db, err := sql.Open("sqlite3", "db.sqlite")
-	if err != nil {
-		t.Fatal(err)
-	}
+	db := openDatabase(t)
 	defer db.Close()
 
-	_, err = db.Exec(`
+	if _, err := db.Exec(`
 		CREATE table users(username TEXT);
 		INSERT INTO users (username) VALUES ('tombell:');
-	`)
-	if err != nil {
+	`); err != nil {
 		t.Fatal(err)
 	}
 
@@ -119,42 +118,76 @@ func TestMigrationsDontApplyTwice(t *testing.T) {
 	}
 
 	applyMigrations(t)
-	applyMigrations(t)
+	assertValueOfUsername(t, "tombell:01234")
 
+	applyMigrations(t)
 	assertValueOfUsername(t, "tombell:01234")
 }
 
-func TestMigrationsCanRollback(t *testing.T) {
+func TestMigrationsRollbackInOrder(t *testing.T) {
 	defer teardown()
 
-	db, err := sql.Open("sqlite3", "db.sqlite")
-	if err != nil {
-		t.Fatal(err)
-	}
+	db := openDatabase(t)
 	defer db.Close()
 
-	_, err = db.Exec(`
+	if _, err := db.Exec(`
 		CREATE table users(username TEXT);
 		INSERT INTO users (username) VALUES ('tombell:');
-	`)
-	if err != nil {
+	`); err != nil {
 		t.Fatal(err)
 	}
 
 	for i := 0; i < 5; i++ {
 		createMigration(t, "concat_values", fmt.Sprintf(
 			`
--- up
-UPDATE users SET username='%v';
--- down
-UPDATE users SET username='%v';
-			`,
-			i, 4-i,
+-- UP
+UPDATE users SET username='up:%v';
+
+-- DOWN
+UPDATE users SET username='down:%v';`,
+			i, i,
 		))
 	}
 
-	applyMigrations(t)
-	rollbackMigrations(t)
+	assertValueOfUsername(t, "tombell:")
 
-	assertValueOfUsername(t, "4")
+	applyMigrations(t)
+	assertValueOfUsername(t, "up:4")
+
+	rollbackMigrations(t, -1)
+	assertValueOfUsername(t, "down:0")
+}
+
+func TestMigrationsRollbackInSteps(t *testing.T) {
+	defer teardown()
+
+	db := openDatabase(t)
+	defer db.Close()
+
+	if _, err := db.Exec(`
+		CREATE table users(username TEXT);
+		INSERT INTO users (username) VALUES ('tombell:');
+	`); err != nil {
+		t.Fatal(err)
+	}
+
+	for i := 0; i < 5; i++ {
+		createMigration(t, "concat_values", fmt.Sprintf(
+			`
+-- UP
+UPDATE users SET username='up:%v';
+
+-- DOWN
+UPDATE users SET username='down:%v';`,
+			i, i,
+		))
+	}
+
+	assertValueOfUsername(t, "tombell:")
+
+	applyMigrations(t)
+	assertValueOfUsername(t, "up:4")
+
+	rollbackMigrations(t, 2)
+	assertValueOfUsername(t, "down:3")
 }
