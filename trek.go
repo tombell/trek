@@ -6,9 +6,9 @@ import (
 	"log"
 )
 
-// Apply applies the migrations in the given path, to the database using the
+// Migrate applies the migrations in the given path, to the database using the
 // given driver.
-func Apply(logger *log.Logger, driverName, dsn, migrationsPath string) error {
+func Migrate(logger *log.Logger, driverName, dsn, migrationsPath string) error {
 	driver, err := getDriver(driverName)
 	if err != nil {
 		return err
@@ -33,7 +33,7 @@ func Apply(logger *log.Logger, driverName, dsn, migrationsPath string) error {
 		return err
 	}
 
-	return migrations.Apply(logger, driver, db)
+	return migrations.Migrate(logger, driver, db)
 }
 
 // Rollback rolls back the migrations in the given path, to the database using

@@ -54,10 +54,10 @@ func createMigration(t *testing.T, migrationName string, sql string) {
 	}
 }
 
-func applyMigrations(t *testing.T) {
+func migrateMigrations(t *testing.T) {
 	t.Helper()
 
-	if err := trek.Apply(nil, "sqlite3", "db.sqlite", "migrations"); err != nil {
+	if err := trek.Migrate(nil, "sqlite3", "db.sqlite", "migrations"); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -86,7 +86,7 @@ func assertValueOfUsername(t *testing.T, expected string) {
 	}
 }
 
-func TestMigrationsApplyInOrder(t *testing.T) {
+func TestMigrationsMigrateInOrder(t *testing.T) {
 	defer teardown()
 
 	createMigration(t, "create_users", "CREATE TABLE users(username TEXT);")
@@ -96,11 +96,11 @@ func TestMigrationsApplyInOrder(t *testing.T) {
 		createMigration(t, "concat_values", fmt.Sprintf("UPDATE users SET username=username || '%v';", i))
 	}
 
-	applyMigrations(t)
+	migrateMigrations(t)
 	assertValueOfUsername(t, "tombell:01234")
 }
 
-func TestMigrationsDontApplyTwice(t *testing.T) {
+func TestMigrationsDontMigrateTwice(t *testing.T) {
 	defer teardown()
 
 	db := openDatabase(t)
@@ -117,10 +117,10 @@ func TestMigrationsDontApplyTwice(t *testing.T) {
 		createMigration(t, "concat_values", fmt.Sprintf("UPDATE users SET username=username || '%v';", i))
 	}
 
-	applyMigrations(t)
+	migrateMigrations(t)
 	assertValueOfUsername(t, "tombell:01234")
 
-	applyMigrations(t)
+	migrateMigrations(t)
 	assertValueOfUsername(t, "tombell:01234")
 }
 
@@ -151,7 +151,7 @@ UPDATE users SET username='down:%v';`,
 
 	assertValueOfUsername(t, "tombell:")
 
-	applyMigrations(t)
+	migrateMigrations(t)
 	assertValueOfUsername(t, "up:4")
 
 	rollbackMigrations(t, -1)
@@ -185,7 +185,7 @@ UPDATE users SET username='down:%v';`,
 
 	assertValueOfUsername(t, "tombell:")
 
-	applyMigrations(t)
+	migrateMigrations(t)
 	assertValueOfUsername(t, "up:4")
 
 	rollbackMigrations(t, 2)
