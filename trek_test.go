@@ -140,10 +140,10 @@ func TestMigrationsRollbackInOrder(t *testing.T) {
 	for i := 0; i < 5; i++ {
 		createMigration(t, "concat_values", fmt.Sprintf(
 			`
--- UP
+-- migrate:up
 UPDATE users SET username='up:%v';
 
--- DOWN
+-- migrate:down
 UPDATE users SET username='down:%v';`,
 			i, i,
 		))
@@ -174,10 +174,10 @@ func TestMigrationsRollbackInSteps(t *testing.T) {
 	for i := 0; i < 5; i++ {
 		createMigration(t, "concat_values", fmt.Sprintf(
 			`
--- UP
+-- migrate:up
 UPDATE users SET username='up:%v';
 
--- DOWN
+-- migrate:down
 UPDATE users SET username='down:%v';`,
 			i, i,
 		))
